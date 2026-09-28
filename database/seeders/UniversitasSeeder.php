@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Dosen;
-use App\Models\MataKuliah;
 use App\Models\mahasiswa;
+use App\Models\MataKuliah;
 use App\Models\prodi;
 use Illuminate\Database\Seeder;
 

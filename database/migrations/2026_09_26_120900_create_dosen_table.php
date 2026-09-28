@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('nip')->unique();
             $table->string('nama_dosen');
-            $table->foreignId('prodi_id')->nullable() ->constrained('prodi_tabel')->onDelete('set null');
+            $table->foreignId('prodi_id')->nullable()->constrained('prodi_tabel')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MataKuliahController extends Controller
 {
@@ -25,7 +26,12 @@ class MataKuliahController extends Controller
             'kode_matkul' => 'required|string|max:20|unique:mata_kuliah,kode_matkul',
             'nama_matkul' => 'required|string|max:100',
             'sks' => 'required|integer|min:1|max:6',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
         ]);
+
+        if ($request->hasFile('foto')) {
+            $validated['foto'] = $request->file('foto')->store('matakuliah', 'public');
+        }
 
         MataKuliah::create($validated);
 
@@ -51,10 +57,18 @@ class MataKuliahController extends Controller
         $mataKuliah = MataKuliah::findOrFail($id);
 
         $validated = $request->validate([
-            'kode_matkul' => 'required|string|max:20|unique:mata_kuliah,kode_matkul,' . $mataKuliah->id,
+            'kode_matkul' => 'required|string|max:20|unique:mata_kuliah,kode_matkul,'.$mataKuliah->id,
             'nama_matkul' => 'required|string|max:100',
             'sks' => 'required|integer|min:1|max:6',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
         ]);
+
+        if ($request->hasFile('foto')) {
+            if ($mataKuliah->foto && Storage::disk('public')->exists($mataKuliah->foto)) {
+                Storage::disk('public')->delete($mataKuliah->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('matakuliah', 'public');
+        }
 
         $mataKuliah->update($validated);
 
@@ -64,6 +78,9 @@ class MataKuliahController extends Controller
     public function destroy(string $id)
     {
         $mataKuliah = MataKuliah::findOrFail($id);
+        if ($mataKuliah->foto && Storage::disk('public')->exists($mataKuliah->foto)) {
+            Storage::disk('public')->delete($mataKuliah->foto);
+        }
         $mataKuliah->mahasiswas()->detach();
         $mataKuliah->delete();
 

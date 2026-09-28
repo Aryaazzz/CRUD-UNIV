@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\prodi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class prodiController extends Controller
 {
@@ -24,7 +25,12 @@ class prodiController extends Controller
         $validated = $request->validate([
             'nama_prodi' => 'required|string|max:100',
             'kode_prodi' => 'required|string|max:20|unique:prodi_tabel,kode_prodi',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
         ]);
+
+        if ($request->hasFile('foto')) {
+            $validated['foto'] = $request->file('foto')->store('prodi', 'public');
+        }
 
         prodi::create($validated);
 
@@ -51,8 +57,16 @@ class prodiController extends Controller
 
         $validated = $request->validate([
             'nama_prodi' => 'required|string|max:100',
-            'kode_prodi' => 'required|string|max:20|unique:prodi_tabel,kode_prodi,' . $prodi->id,
+            'kode_prodi' => 'required|string|max:20|unique:prodi_tabel,kode_prodi,'.$prodi->id,
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
         ]);
+
+        if ($request->hasFile('foto')) {
+            if ($prodi->foto && Storage::disk('public')->exists($prodi->foto)) {
+                Storage::disk('public')->delete($prodi->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('prodi', 'public');
+        }
 
         $prodi->update($validated);
 
@@ -62,6 +76,9 @@ class prodiController extends Controller
     public function destroy(string $id)
     {
         $prodi = prodi::findOrFail($id);
+        if ($prodi->foto && Storage::disk('public')->exists($prodi->foto)) {
+            Storage::disk('public')->delete($prodi->foto);
+        }
         $prodi->delete();
 
         return redirect()->route('prodi.index')->with('success', 'Data prodi berhasil dihapus.');

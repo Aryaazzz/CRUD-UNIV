@@ -75,12 +75,18 @@
     },
     "config": {
         "optimize-autoloader": true,
-        "preferred-install": "dist",
+        "preferred-install": {
+            "vlucas/phpdotenv": "dist",
+            "laravel/framework": "dist",
+            "laravel/pint": "dist",
+            "*": "source"
+        },
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "process-timeout": 3600
     },
     "minimum-stability": "stable",
     "prefer-stable": true

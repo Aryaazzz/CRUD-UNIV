@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MataKuliah;
 use App\Models\mahasiswa;
+use App\Models\MataKuliah;
 use App\Models\prodi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class mahasiswaController extends Controller
 {
@@ -30,17 +31,24 @@ class mahasiswaController extends Controller
             'nim' => 'required|string|max:20|unique:mahasiswa,nim',
             'nama' => 'required|string|max:100',
             'prodi_id' => 'required|exists:prodi_tabel,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'mata_kuliah' => 'nullable|array',
             'mata_kuliah.*' => 'exists:mata_kuliah,id',
         ]);
+
+        $fotoPath = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('mahasiswa', 'public');
+        }
 
         $mahasiswa = mahasiswa::create([
             'nim' => $validated['nim'],
             'nama' => $validated['nama'],
             'prodi_id' => $validated['prodi_id'],
+            'foto' => $fotoPath,
         ]);
 
-        if (!empty($validated['mata_kuliah'])) {
+        if (! empty($validated['mata_kuliah'])) {
             $mahasiswa->mataKuliahs()->sync($validated['mata_kuliah']);
         }
 
@@ -68,18 +76,28 @@ class mahasiswaController extends Controller
         $mahasiswa = mahasiswa::findOrFail($id);
 
         $validated = $request->validate([
-            'nim' => 'required|string|max:20|unique:mahasiswa,nim,' . $mahasiswa->id,
+            'nim' => 'required|string|max:20|unique:mahasiswa,nim,'.$mahasiswa->id,
             'nama' => 'required|string|max:100',
             'prodi_id' => 'required|exists:prodi_tabel,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'mata_kuliah' => 'nullable|array',
             'mata_kuliah.*' => 'exists:mata_kuliah,id',
         ]);
 
-        $mahasiswa->update([
+        $updateData = [
             'nim' => $validated['nim'],
             'nama' => $validated['nama'],
             'prodi_id' => $validated['prodi_id'],
-        ]);
+        ];
+
+        if ($request->hasFile('foto')) {
+            if ($mahasiswa->foto && Storage::disk('public')->exists($mahasiswa->foto)) {
+                Storage::disk('public')->delete($mahasiswa->foto);
+            }
+            $updateData['foto'] = $request->file('foto')->store('mahasiswa', 'public');
+        }
+
+        $mahasiswa->update($updateData);
 
         $mahasiswa->mataKuliahs()->sync($validated['mata_kuliah'] ?? []);
 
@@ -89,6 +107,9 @@ class mahasiswaController extends Controller
     public function destroy(string $id)
     {
         $mahasiswa = mahasiswa::findOrFail($id);
+        if ($mahasiswa->foto && Storage::disk('public')->exists($mahasiswa->foto)) {
+            Storage::disk('public')->delete($mahasiswa->foto);
+        }
         $mahasiswa->mataKuliahs()->detach();
         $mahasiswa->delete();
 

@@ -11,7 +11,21 @@ class prodi extends Model
     protected $fillable = [
         'nama_prodi',
         'kode_prodi',
+        'foto',
     ];
+
+    public function getFotoUrlAttribute(): ?string
+    {
+        if (! empty($this->foto)) {
+            if (str_starts_with($this->foto, 'http://') || str_starts_with($this->foto, 'https://')) {
+                return $this->foto;
+            }
+
+            return asset('storage/'.$this->foto);
+        }
+
+        return null;
+    }
 
     public function mahasiswas()
     {

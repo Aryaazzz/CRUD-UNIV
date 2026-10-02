@@ -178,17 +178,37 @@
 
                 <!-- Right Profile / Quick Action -->
                 <div class="flex items-center gap-3">
-                    <div class="hidden lg:flex items-center gap-3 pl-3 border-l border-navy-800">
-                        <div class="text-right">
-                            <span class="text-xs font-semibold text-white block">BAAK Pusat</span>
-                            <span class="text-[11px] text-emerald-400 block font-medium flex items-center justify-end gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sesi Aktif
-                            </span>
+                    @auth
+                        <div class="hidden lg:flex items-center gap-3 pl-3 border-l border-navy-800">
+                            <div class="text-right">
+                                <span class="text-xs font-semibold text-white block">{{ Auth::user()->name }}</span>
+                                <span class="text-[11px] text-emerald-400 block font-medium flex items-center justify-end gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sesi Aktif
+                                </span>
+                            </div>
+                            <a href="{{ route('profile.edit') }}" title="Pengaturan Profil" class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-gold-400 flex items-center justify-center font-bold text-navy-950 text-sm shadow-md ring-2 ring-white/10 hover:ring-gold-400 hover:scale-105 transition-all">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}" class="inline ml-1">
+                                @csrf
+                                <button type="submit" title="Keluar / Logout" class="text-xs bg-rose-600/80 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                    <span>Keluar</span>
+                                </button>
+                            </form>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-gold-400 flex items-center justify-center font-bold text-navy-950 text-sm shadow-md ring-2 ring-white/10">
-                            AK
+                    @else
+                        <div class="flex items-center gap-2 pl-3 border-l border-navy-800">
+                            <a href="{{ route('login') }}" class="text-xs bg-univ-600 hover:bg-univ-500 text-white px-3.5 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                <span>Masuk</span>
+                            </a>
+                            <a href="{{ route('register') }}" class="text-xs bg-navy-800 hover:bg-navy-700 text-slate-200 border border-slate-700 px-3.5 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-plus"></i>
+                                <span>Daftar</span>
+                            </a>
                         </div>
-                    </div>
+                    @endauth
 
                     <!-- Mobile Menu Button -->
                     <button id="mobile-menu-btn" type="button" class="md:hidden text-slate-300 hover:text-white p-2 rounded-lg hover:bg-navy-800 focus:outline-none">
@@ -215,6 +235,32 @@
             <a href="{{ route('mata-kuliah.index') }}" class="block px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('mata-kuliah.*') ? 'bg-univ-600 text-white' : 'text-slate-300 hover:bg-navy-800' }}">
                 <i class="fa-solid fa-book-bookmark mr-2 text-gold-400"></i> Mata Kuliah
             </a>
+
+            @auth
+                <div class="pt-3 border-t border-navy-800 mt-2">
+                    <div class="px-3 py-2 text-xs text-slate-400">
+                        Login sebagai: <strong class="text-white">{{ Auth::user()->name }}</strong>
+                    </div>
+                    <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-navy-800">
+                        <i class="fa-solid fa-user-gear mr-2 text-univ-400"></i> Edit Profil
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="mt-1">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-rose-400 hover:bg-navy-800 flex items-center gap-2">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar (Logout)
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="pt-3 border-t border-navy-800 mt-2 space-y-1">
+                    <a href="{{ route('login') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-univ-400 hover:bg-navy-800">
+                        <i class="fa-solid fa-right-to-bracket mr-2"></i> Masuk (Login)
+                    </a>
+                    <a href="{{ route('register') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-navy-800">
+                        <i class="fa-solid fa-user-plus mr-2"></i> Daftar (Register)
+                    </a>
+                </div>
+            @endauth
         </div>
     </nav>
 
@@ -279,6 +325,7 @@
         @endif
 
         @yield('content')
+        {{ $slot ?? '' }}
     </main>
 
     <!-- University Institutional Footer -->
